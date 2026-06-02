@@ -4,3 +4,4 @@
 # for the available values for each variable.
 
 MIRYOKU_ALPHAS = QWERTY
+MIRYOKU_NAV = VI

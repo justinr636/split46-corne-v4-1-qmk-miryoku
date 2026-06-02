@@ -5,3 +5,7 @@
 
 #pragma once
 
+#define COMBO_TERM 50
+
+#define SPLIT_LAYER_STATE_ENABLE
+
