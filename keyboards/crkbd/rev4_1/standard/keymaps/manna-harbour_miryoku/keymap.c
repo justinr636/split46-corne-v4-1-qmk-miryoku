@@ -17,6 +17,46 @@ combo_t key_combos[] = {
 };
 
 
+// Reorient the MOUSE layer right-thumb cluster from R L M (BTN2 BTN1 BTN3,
+// inner -> outer) to L M R (BTN1 BTN3 BTN2) -- matches a physical mouse.
+// We only remap while the MOUSE layer is the active (held) layer, so the
+// BUTTON layer's mouse buttons keep their original arrangement.
+// Press/release state is tracked so a key released after the layer thumb is
+// already lifted still unregisters the correct mapped button.
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    static uint8_t mapped_for[3] = {KC_NO, KC_NO, KC_NO}; // [BTN1, BTN2, BTN3]
+
+    if (keycode < MS_BTN1 || keycode > MS_BTN3) {
+        return true;
+    }
+    uint8_t idx = keycode - MS_BTN1;
+
+    if (record->event.pressed) {
+        if (get_highest_layer(layer_state) != U_MOUSE) {
+            return true;
+        }
+        uint8_t mapped;
+        switch (keycode) {
+            case MS_BTN1: mapped = MS_BTN3; break; // middle thumb -> Middle
+            case MS_BTN2: mapped = MS_BTN1; break; // inner  thumb -> Left
+            case MS_BTN3: mapped = MS_BTN2; break; // outer  thumb -> Right
+            default: return true;
+        }
+        mapped_for[idx] = mapped;
+        register_code(mapped);
+        return false;
+    }
+
+    if (mapped_for[idx] != KC_NO) {
+        unregister_code(mapped_for[idx]);
+        mapped_for[idx] = KC_NO;
+        return false;
+    }
+    return true;
+}
+
+
 // Per-layer RGB indicator.
 //
 // NAV layer: per-key colors (arrows green, home/end yellow, copy/paste blue,
